@@ -8,17 +8,14 @@ import base64
 from PIL import Image
 import io
 
+from libs import config
+
+config.load()
+
+STORAGE_FOLDER = config.get("storage", "path")
 
 app = FastAPI()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-STORAGE_FOLDER = os.environ.get("STORAGE_FOLDER")
-
-class User(BaseModel):
-	username: str
-	password: str
-	role: str
 
 class UploadImage(BaseModel):
 	dest_folder: str
