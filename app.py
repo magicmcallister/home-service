@@ -13,7 +13,7 @@ app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-STORAGE_FOLDER = os.environ["STORAGE_FOLDER"]
+STORAGE_FOLDER = os.environ.get("STORAGE_FOLDER")
 
 class User(BaseModel):
 	username: str
