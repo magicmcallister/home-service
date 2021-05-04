@@ -4,10 +4,11 @@ import config
 
 config.load()
 
-DB_HOST=config.get("database", "host")
-DB_NAME=config.get("database", "name")
-DB_USER=config.get("database", "user")
-DB_PASSWORD=config.get("database", "password")
+
+DB_HOST=config.get("DATABASE", "HOST")
+DB_NAME=config.get("DATABASE", "NAME")
+DB_USER=config.get("DATABASE", "USER")
+DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 
 class DbClient:
@@ -16,3 +17,4 @@ class DbClient:
             host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD
             )
         self.cur = self.conn.cursor()
+
