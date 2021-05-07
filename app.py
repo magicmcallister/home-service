@@ -1,6 +1,6 @@
 import os
-from fastapi import FastAPI, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI, Depends, Security, HTTPException
+from fastapi.security.api_key import APIKeyQuery, APIKey
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
@@ -9,14 +9,51 @@ from PIL import Image
 import io
 
 from libs import config
+from libs import postgres_client
 
 config.load()
 
-STORAGE_FOLDER = config.get("storage", "path")
+STORAGE_FOLDER = config.get("STORAGE", "PATH")
+ADMIN_KEY = config.get("KEY", "ADMIN")
+
+DB_HOST=config.get("DATABASE", "HOST")
+DB_NAME=config.get("DATABASE", "NAME")
+DB_USER=config.get("DATABASE", "USER")
+DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 app = FastAPI()
 
+###### Manage Users Endpoints ######
+class User(BaseModel):
+	username: str
+	password: str
+	roles: list
 
+apikey = APIKeyQuery(name="api_key")
+
+async def get_api_key(apikey: str = Security(apikey)):
+    if apikey == ADMIN_KEY:
+	    return apikey
+    else:
+        raise HTTPException(
+            status_code=403, detail="Could not validate credentials"
+        )
+
+@app.get("/get_users")
+async def get_users(api_key: APIKey = Depends(get_api_key)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+		)
+	users = db.execute_query("select username from sync_user")
+	return users
+
+# @app.post("new_user")
+# async def post_user(api_key: APIKey = Depends(get_api_key), user: User):
+# 	print(user.username)
+# 	print(user.password)
+# 	print(user.roles)
+
+###### Sync Images Endpoints ######
 class UploadImage(BaseModel):
 	dest_folder: str
 	image: str

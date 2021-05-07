@@ -4,7 +4,7 @@ import configparser
 
 
 CONFIG_FILE = "config.ini"
-CONFIG_FOLDER = os.path.dirname(os.path.abspath(""))
+CONFIG_FOLDER = os.path.abspath("")
 CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILE)
 
 config = configparser.ConfigParser()

@@ -1,20 +1,26 @@
 import psycopg2
 
-import config
-
-config.load()
-
-
-DB_HOST=config.get("DATABASE", "HOST")
-DB_NAME=config.get("DATABASE", "NAME")
-DB_USER=config.get("DATABASE", "USER")
-DB_PASSWORD=config.get("DATABASE", "PASSWORD")
-
 
 class DbClient:
-    def __init__(self):
+    def __init__(self, host, name, user, password):
         self.conn = psycopg2.connect(
-            host=DB_HOST, database=DB_NAME, user=DB_USER, password=DB_PASSWORD
+            host=host, database=name, user=user, password=password
             )
         self.cur = self.conn.cursor()
 
+    def _close_connection(self):
+        self.conn.close()
+
+    def execute_query(self, query, select=False):
+        if select:
+            try:
+                self.cur.execute(query)
+                return self.cur.fetchall()
+            except Exception as e:
+                print(f"Database Error: {e}")
+        else:
+            try:
+                self.cur.execute(query)
+                self.conn.commit()
+            except Exception as e:
+                print(f"Database Error: {e}")
