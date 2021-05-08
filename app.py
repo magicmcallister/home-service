@@ -8,9 +8,10 @@ import base64
 from PIL import Image
 import io
 
-from libs import config
+from libs.config import Config
 from libs import postgres_client
 
+config = Config()
 config.load()
 
 STORAGE_FOLDER = config.get("STORAGE", "PATH")
