@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -22,13 +22,4 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-  
-  test:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Service test
-      run: |
-        pip install pytest
         ls
-        cd ../../
-        pytest test.py
