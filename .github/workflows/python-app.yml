@@ -25,4 +25,4 @@ jobs:
     - name: Service test
       run: |
         pip install pytest
-        pytest test.py
+        pytest test.py -v
