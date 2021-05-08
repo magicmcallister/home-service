@@ -29,4 +29,6 @@ jobs:
     - name: Service test
       run: |
         pip install pytest
+        ls
+        cd ../../
         pytest test.py
