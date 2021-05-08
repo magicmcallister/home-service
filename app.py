@@ -23,11 +23,19 @@ DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 app = FastAPI()
 
-###### Manage Users Endpoints ######
+db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
+
+###### Manage Users/Login Endpoints ######
 class User(BaseModel):
 	username: str
 	password: str
 	roles: list
+
+class LoginUser(BaseModel):
+	username: str
+	password: str
 
 apikey = APIKeyQuery(name="api_key")
 
@@ -36,22 +44,26 @@ async def get_api_key(apikey: str = Security(apikey)):
 	    return apikey
     else:
         raise HTTPException(
-            status_code=403, detail="Could not validate credentials"
+            status_code=403, detail="Missing authentication"
         )
 
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
-	db = postgres_client.DbClient(
-		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
-		)
-	users = db.execute_query("select username from sync_user")
+	users = db.execute_query("select username, password from sync_user", select=True)
 	return users
 
-# @app.post("new_user")
-# async def post_user(api_key: APIKey = Depends(get_api_key), user: User):
-# 	print(user.username)
-# 	print(user.password)
-# 	print(user.roles)
+@app.post("/login")
+async def login(user: LoginUser, api_key: APIKey = Depends(get_api_key)):
+	users = dict(db.execute_query("select username, password from sync_user", select=True))
+	if not user.username in users.keys():
+		raise HTTPException(
+			status_code=404, detail="User not found"
+		)
+	else:
+		if not users[user.username] == user.password:
+			raise HTTPException(
+				status_code=403, detail="Could not validate credentials"
+			)
 
 ###### Sync Images Endpoints ######
 class UploadImage(BaseModel):
