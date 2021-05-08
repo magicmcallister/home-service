@@ -24,10 +24,6 @@ DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 app = FastAPI()
 
-db = postgres_client.DbClient(
-		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
-	)
-
 ###### Manage Users/Login Endpoints ######
 class User(BaseModel):
 	username: str
@@ -50,11 +46,17 @@ async def get_api_key(apikey: str = Security(apikey)):
 
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
 	users = db.execute_query("select username, password from sync_user", select=True)
 	return users
 
 @app.post("/login")
 async def login(user: LoginUser, api_key: APIKey = Depends(get_api_key)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
 	users = dict(db.execute_query("select username, password from sync_user", select=True))
 	if not user.username in users.keys():
 		raise HTTPException(
