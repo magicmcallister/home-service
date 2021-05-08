@@ -10,6 +10,9 @@ CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILE)
 config = configparser.ConfigParser()
 
 def load():
+    if not os.path.isfile(CONFIG_PATH):
+        CONFIG_FOLDER = os.path.dirname(os.path.abspath(""))
+        CONFIG_PATH = os.path.join(CONFIG_FOLDER, CONFIG_FILE)
     try:
         config.read(CONFIG_PATH)
     except Exception:
