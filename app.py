@@ -8,8 +8,8 @@ import base64
 from PIL import Image
 import io
 
-from libs.config import Config
-from libs import postgres_client
+from config import Config
+import postgres_client
 
 config = Config()
 config.load()
