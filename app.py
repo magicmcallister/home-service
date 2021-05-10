@@ -7,6 +7,7 @@ from pydantic import BaseModel
 import base64
 from PIL import Image
 import io
+import bcrypt
 
 from config import Config
 import postgres_client
@@ -58,12 +59,13 @@ async def login(user: LoginUser, api_key: APIKey = Depends(get_api_key)):
 		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 	)
 	users = dict(db.execute_query("select username, password from sync_user", select=True))
+	check_pass = bcrypt.checkpw(user.password.encode('utf-8'), user.password.encode('utf-8'))
 	if not user.username in users.keys():
 		raise HTTPException(
 			status_code=404, detail="User not found"
 		)
 	else:
-		if not users[user.username] == user.password:
+		if not users[user.username] == check_pass:
 			raise HTTPException(
 				status_code=403, detail="Could not validate credentials"
 			)
