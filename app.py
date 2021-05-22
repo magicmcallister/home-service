@@ -44,6 +44,15 @@ async def get_api_key(apikey: str = Security(apikey)):
             status_code=403, detail="Missing authentication"
         )
 
+@app.get("/get_user_by_key")
+async def get_user_by_key(apikey: str = Security(apikey)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
+	query = f"select username from sync_user where apikey = {apikey}"
+	user = db.execute_query(query, select=True)
+	return user
+
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
 	db = postgres_client.DbClient(
