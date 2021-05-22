@@ -54,19 +54,20 @@ async def get_users(api_key: APIKey = Depends(get_api_key)):
 
 @app.post("/login")
 async def login(user: LoginUser, api_key: APIKey = Depends(get_api_key)):
-	db = postgres_client.DbClient(
-		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
-	)
-	users = dict(db.execute_query("select username, password from sync_user", select=True))
-	if not user.username in users.keys():
+	db = postgres_client.DbClient(DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)
+	query = f"select u.username, u.password, u.apikey, r.role from sync_user u join user_role ur on u.id = ur.user_id join role r on ur.role_id = r.id where username = '{user.username}'"
+	db_user = db.execute_query(query, select=True)
+	#check_pass = bcrypt.checkpw(user.password.encode('utf-8'), user.password.encode('utf-8'))
+	if not db_user:
 		raise HTTPException(
 			status_code=404, detail="User not found"
 		)
 	else:
-		if not users[user.username] == user.password:
+		if not user.password == db_user[0][1]:
 			raise HTTPException(
 				status_code=403, detail="Could not validate credentials"
 			)
+	return db_user
 
 ###### Sync Images Endpoints ######
 class UploadImage(BaseModel):
