@@ -7,7 +7,6 @@ from pydantic import BaseModel
 import base64
 from PIL import Image
 import io
-import bcrypt
 
 from config import Config
 import postgres_client
