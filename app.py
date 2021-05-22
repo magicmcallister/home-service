@@ -49,8 +49,9 @@ async def get_user_by_key(apikey: str = Security(apikey)):
 	db = postgres_client.DbClient(
 		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 	)
-	query = f"select username from sync_user where apikey = {apikey}"
+	query = f"select username from sync_user where apikey = '{apikey}'"
 	user = db.execute_query(query, select=True)
+	print(user)
 	return user
 
 @app.get("/get_users")
