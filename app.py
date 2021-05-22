@@ -44,15 +44,23 @@ async def get_api_key(apikey: str = Security(apikey)):
             status_code=403, detail="Missing authentication"
         )
 
-@app.get("/get_user_by_key")
 async def get_user_by_key(apikey: str = Security(apikey)):
-	db = postgres_client.DbClient(
-		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
-	)
-	query = f"select username from sync_user where apikey = '{apikey}'"
-	user = db.execute_query(query, select=True)
-	print(user)
-	return user
+	if not apikey:
+		raise HTTPException(
+            status_code=403, detail="Missing authentication"
+        )
+	else:
+		db = postgres_client.DbClient(
+			DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+		)
+		query = f"select username from sync_user where apikey = '{apikey}'"
+		user = db.execute_query(query, select=True)
+		if not user:
+			raise HTTPException(
+			status_code=404, detail="User not found"
+		)
+		else:
+			return user
 
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
@@ -101,8 +109,9 @@ async def main():
 	return HTMLResponse(content=content, status_code=200)
 
 @app.get("/get_storage_files/{folder}")
-async def getfiles(folder: str):
-	files = os.listdir(STORAGE_FOLDER + f"/{folder}") 
+async def getfiles(folder: str, user: str = Depends(get_user_by_key)):
+	files = os.listdir(STORAGE_FOLDER + f"/{folder}")
+	print(user)
 	return files
 
 @app.post('/upload_file')
