@@ -44,6 +44,24 @@ async def get_api_key(apikey: str = Security(apikey)):
             status_code=403, detail="Missing authentication"
         )
 
+async def get_user_by_key(apikey: str = Security(apikey)):
+	if not apikey:
+		raise HTTPException(
+            status_code=403, detail="Missing authentication"
+        )
+	else:
+		db = postgres_client.DbClient(
+			DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+		)
+		query = f"select username from sync_user where apikey = '{apikey}'"
+		user = db.execute_query(query, select=True)
+		if not user:
+			raise HTTPException(
+			status_code=404, detail="User not found"
+		)
+		else:
+			return user[0][0]
+
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
 	db = postgres_client.DbClient(
@@ -91,17 +109,22 @@ async def main():
 	return HTMLResponse(content=content, status_code=200)
 
 @app.get("/get_storage_files/{folder}")
-async def getfiles(folder: str):
-	files = os.listdir(STORAGE_FOLDER + f"/{folder}") 
+async def getfiles(folder: str, user: str = Depends(get_user_by_key)):
+	user_path = STORAGE_FOLDER + f"/{user}" + f"/{folder}"
+	if os.path.exists(user_path):
+		files = os.listdir(user_path)
+	else:
+		os.makedirs(user_path)
+		files = os.listdir(user_path)
 	return files
 
 @app.post('/upload_file')
-async def uploadfile(image_data: UploadImage):
+async def uploadfile(image_data: UploadImage, user: str = Depends(get_user_by_key)):
 	dest_folder = image_data.dest_folder
 	im_64 = image_data.image
 	im_name = image_data.image_name
 	im = base64.b64decode(im_64.encode("utf-8"))
 	img = Image.open(io.BytesIO(im))
-	save_folder = STORAGE_FOLDER + "/" + dest_folder + "/" + im_name
+	save_folder = STORAGE_FOLDER + "/" + user + "/" + dest_folder + "/" + im_name
 	img.save(save_folder)
 	return "Image Uploaded"
