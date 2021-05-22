@@ -60,7 +60,7 @@ async def get_user_by_key(apikey: str = Security(apikey)):
 			status_code=404, detail="User not found"
 		)
 		else:
-			return user
+			return user[0][0]
 
 @app.get("/get_users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
@@ -110,8 +110,14 @@ async def main():
 
 @app.get("/get_storage_files/{folder}")
 async def getfiles(folder: str, user: str = Depends(get_user_by_key)):
-	files = os.listdir(STORAGE_FOLDER + f"/{folder}")
-	print(user)
+	user_path = STORAGE_FOLDER + f"/{user}" + f"/{folder}"
+	if os.path.exists(user_path):
+		print("Created")
+		files = os.listdir(user_path)
+	else:
+		print("CREATED")
+		os.makedirs(user_path)
+		files = os.listdir(user_path)
 	return files
 
 @app.post('/upload_file')
