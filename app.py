@@ -112,21 +112,19 @@ async def main():
 async def getfiles(folder: str, user: str = Depends(get_user_by_key)):
 	user_path = STORAGE_FOLDER + f"/{user}" + f"/{folder}"
 	if os.path.exists(user_path):
-		print("Created")
 		files = os.listdir(user_path)
 	else:
-		print("CREATED")
 		os.makedirs(user_path)
 		files = os.listdir(user_path)
 	return files
 
 @app.post('/upload_file')
-async def uploadfile(image_data: UploadImage):
+async def uploadfile(image_data: UploadImage, user: str = Depends(get_user_by_key)):
 	dest_folder = image_data.dest_folder
 	im_64 = image_data.image
 	im_name = image_data.image_name
 	im = base64.b64decode(im_64.encode("utf-8"))
 	img = Image.open(io.BytesIO(im))
-	save_folder = STORAGE_FOLDER + "/" + dest_folder + "/" + im_name
+	save_folder = STORAGE_FOLDER + "/" + user + "/" + dest_folder + "/" + im_name
 	img.save(save_folder)
 	return "Image Uploaded"
