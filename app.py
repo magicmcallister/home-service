@@ -7,6 +7,7 @@ from pydantic import BaseModel
 import base64
 from PIL import Image
 import io
+import secrets
 
 from config import Config
 import postgres_client
@@ -23,6 +24,10 @@ DB_USER=config.get("DATABASE", "USER")
 DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 app = FastAPI()
+
+##### Aux Functions #####
+def _generate_apikey():
+	return secrets.token_urlsafe(25)
 
 ###### Manage Users/Login Endpoints ######
 class User(BaseModel):
@@ -62,7 +67,30 @@ async def get_user_by_key(apikey: str = Security(apikey)):
 		else:
 			return user[0][0]
 
-@app.get("/get_users")
+@app.get("/roles")
+async def get_roles(api_key: APIKey = Depends(get_user_by_key)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
+	roles = db.execute_query("select id, role from role", select=True)
+	return roles
+
+@app.post("/new_user")
+async def post_user(user: User, api_key: APIKey = Depends(get_user_by_key)):
+	db = postgres_client.DbClient(
+		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
+	)
+	generated_apikey = _generate_apikey()
+	user_query = f"insert into sync_user(username, password, apikey) values ('{user.username}', '{user.password}', '{generated_apikey}')"
+	db.execute_query(user_query)
+	user_id_query = f"select id from sync_user where username = '{user.username}'"
+	user_id = db.execute_query(user_id_query, select=True)
+	for role_id in user.roles:
+		role_query = f"insert into user_role(user_id, role_id) values ({user_id[0][0]}, {role_id})"
+		db.execute_query(role_query)
+	return "New user has been created"
+
+@app.get("/users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
 	db = postgres_client.DbClient(
 		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
