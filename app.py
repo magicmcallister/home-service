@@ -87,7 +87,8 @@ async def post_user(user: User, api_key: APIKey = Depends(get_user_by_key)):
 	user_id = db.execute_query(user_id_query, select=True)[0][0]
 	for role_id in user.roles:
 		role_query = f"insert into user_role(user_id, role_id) values ({user_id}, {role_id})"
-	return "New user has been created"
+	query = f"select u.username, u.password, r.role from sync_user u join user_role ur on u.id = ur.user_id join role r on ur.role_id = r.id where username = '{user.username}'"
+	return db.execute_query(query, select=True)
 
 @app.get("/users")
 async def get_users(api_key: APIKey = Depends(get_api_key)):
