@@ -81,9 +81,9 @@ async def post_user(user: User, api_key: APIKey = Depends(get_user_by_key)):
 		DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 	)
 	generated_apikey = _generate_apikey()
-	user_query = f"insert into sync_user(username, password, apikey) values ({user.username}, {user.password}, {generated_apikey})"
+	user_query = f"insert into sync_user(username, password, apikey) values ('{user.username}', '{user.password}', '{generated_apikey})'"
 	db.execute_query(user_query)
-	user_id_query = f"select id from sync_user where username = {user.username}"
+	user_id_query = f"select id from sync_user where username = '{user.username}'"
 	user_id = db.execute_query(user_id_query, select=True)[0][0]
 	for role_id in user.roles:
 		role_query = f"insert into user_role(user_id, role_id) values ({user_id}, {role_id})"
