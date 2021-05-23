@@ -84,11 +84,10 @@ async def post_user(user: User, api_key: APIKey = Depends(get_user_by_key)):
 	user_query = f"insert into sync_user(username, password, apikey) values ('{user.username}', '{user.password}', '{generated_apikey}')"
 	db.execute_query(user_query)
 	user_id_query = f"select id from sync_user where username = '{user.username}'"
-	print(user_id_query)
 	user_id = db.execute_query(user_id_query, select=True)
-	print(user_id)
 	for role_id in user.roles:
-		role_query = f"insert into user_role(user_id, role_id) values ({user_id}, {role_id})"
+		role_query = f"insert into user_role(user_id, role_id) values ({user_id[0][0]}, {role_id})"
+		db.execute_query(role_query)
 	return "New user has been created"
 
 @app.get("/users")
