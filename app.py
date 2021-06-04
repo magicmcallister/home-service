@@ -11,6 +11,7 @@ import secrets
 
 from config import Config
 import postgres_client
+from light_controller import LightController
 
 config = Config()
 config.load()
@@ -24,6 +25,8 @@ DB_USER=config.get("DATABASE", "USER")
 DB_PASSWORD=config.get("DATABASE", "PASSWORD")
 
 app = FastAPI()
+
+controller = LightController()
 
 ##### Aux Functions #####
 def _generate_apikey():
@@ -156,3 +159,18 @@ async def uploadfile(image_data: UploadImage, user: str = Depends(get_user_by_ke
 	save_folder = STORAGE_FOLDER + "/" + user + "/" + dest_folder + "/" + im_name
 	img.save(save_folder)
 	return "Image Uploaded"
+
+###### Light Controller Endpoint ######
+@app.get('/light_info')
+async def light_info():
+	return controller.get_info()
+
+@app.post('/light_on')
+async def light_on():
+	controller.turn_on()
+	return "Success"
+
+@app.post('/light_off')
+async def light_off():
+	controller.turn_off()
+	return "Success"
