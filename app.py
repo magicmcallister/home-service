@@ -4,6 +4,7 @@ from fastapi.security.api_key import APIKeyQuery, APIKey
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+import datetime
 import base64
 from PIL import Image
 import io
@@ -161,16 +162,23 @@ async def uploadfile(image_data: UploadImage, user: str = Depends(get_user_by_ke
 	return "Image Uploaded"
 
 ###### Light Controller Endpoint ######
+def _check_light_controller():
+	if abs((controller.last_update - datetime.datetime.now()).total_seconds()) > 1200:
+		controller._restart()
+
 @app.get('/light_info')
-async def light_info():
+async def light_info(api_key: APIKey = Depends(get_api_key)):
+	_check_light_controller()
 	return controller.get_info()
 
 @app.post('/light_on')
-async def light_on():
+async def light_on(api_key: APIKey = Depends(get_api_key)):
+	_check_light_controller()
 	controller.turn_on()
 	return "Success"
 
 @app.post('/light_off')
-async def light_off():
+async def light_off(api_key: APIKey = Depends(get_api_key)):
+	_check_light_controller()
 	controller.turn_off()
 	return "Success"
