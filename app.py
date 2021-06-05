@@ -167,18 +167,18 @@ def _check_light_controller():
 		controller._restart()
 
 @app.get('/light_info')
-async def light_info():
+async def light_info(api_key: APIKey = Depends(get_api_key)):
 	_check_light_controller()
 	return controller.get_info()
 
 @app.post('/light_on')
-async def light_on():
+async def light_on(api_key: APIKey = Depends(get_api_key)):
 	_check_light_controller()
 	controller.turn_on()
 	return "Success"
 
 @app.post('/light_off')
-async def light_off():
+async def light_off(api_key: APIKey = Depends(get_api_key)):
 	_check_light_controller()
 	controller.turn_off()
 	return "Success"
