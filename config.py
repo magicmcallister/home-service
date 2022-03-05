@@ -1,27 +1,42 @@
-import sys
 import os
-import configparser
 
 
-class Config:
-    def __init__(self):
-        self.config = configparser.ConfigParser()
-        self.config_file = "config.ini"
-        self.config_folder = os.path.abspath("")
-        self.config_path = os.path.join(self.config_folder, self.config_file)
+def get_env(variable, default=None):
+    env_variable = os.getenv(variable)
+    if not env_variable:
+        return default
+    return env_variable
 
-    def load(self):
-        if not os.path.isfile(self.config_path):
-            self.config_folder = os.path.dirname(os.path.abspath(""))
-            self.config_path = os.path.join(self.config_folder, self.config_file)
-        try:
-            self.config.read(self.config_path)
-        except Exception:
-            print("Error: wrong or missing 'config.ini' file")
 
-    def get(self, section, parameter):
-        if self.config.has_option(section, parameter):
-            value = self.config.get(section, parameter)
-        else:
-            value = os.getenv("_".join([section.upper(), parameter.upper()]))
-        return value
+def get_int_env(variable, default=None):
+    env_variable = get_env(variable, default)
+    if not env_variable:
+        return default
+    try:
+        env_variable = int(env_variable)
+        return env_variable
+    except ValueError:
+        print(f"Error: can not convert to int: {variable}")
+        return default
+
+
+def get_float_env(variable, default=None):
+    env_variable = get_env(variable, default)
+    if not env_variable:
+        return default
+    try:
+        env_variable = float(env_variable)
+        return env_variable
+    except ValueError:
+        print(f"Error: can not convert to float: {variable}")
+        return default
+
+
+def get_bool_env(variable, default=None):
+    env_variable = get_env(variable, default)
+    if not env_variable or env_variable not in ("True", "False"):
+        return default
+    if env_variable == "True":
+        return True
+    elif env_variable == "False":
+        return False
