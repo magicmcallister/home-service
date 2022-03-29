@@ -7,8 +7,7 @@ from fastapi.responses import HTMLResponse
 import shutil
 from typing import List
 
-import config
-import models
+from libs import config
 
 
 STORAGE_FOLDER = config.get_env("STORAGE_PATH")
