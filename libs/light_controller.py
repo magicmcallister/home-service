@@ -2,10 +2,16 @@ import json
 import datetime
 from PyP100 import PyP100
 
+import config
+
 
 class LightController:
     def __init__(self):
-        self.p100 = PyP100.P100("192.168.1.16", "sarablanco2a@gmail.com", "MF477WUuUtqi89Q")
+        self.p100 = PyP100.P100(
+            config.get_env("LIGHT_CONTROLLER_HOST"),
+            config.get_env("LIGHT_CONTROLLER_USER"),
+            config.get_env("LIGHT_CONTROLLER_KEY"),
+        )
         self.p100.handshake()
         self.p100.login()
 
@@ -24,7 +30,7 @@ class LightController:
         else:
             self.p100.turnOn()
             self.on_state = True
-    
+
     def turn_off(self):
         self.get_current_state()
         if self.on_state:
