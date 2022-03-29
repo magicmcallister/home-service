@@ -1,4 +1,5 @@
 import json
+import datetime
 from PyP100 import PyP100
 
 import config
@@ -13,7 +14,14 @@ class LightController:
         )
         self.p100.handshake()
         self.p100.login()
+
         self.on_state = None
+        self.last_update = datetime.datetime.now()
+
+    def _restart(self):
+        self.p100.handshake()
+        self.p100.login()
+        self.last_update = datetime.datetime.now()
 
     def turn_on(self):
         self.get_current_state()
